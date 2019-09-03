@@ -1,0 +1,29 @@
+- name: Install MariaDB/mysql
+  apt:
+    name: {{ item }}
+    state: latest
+  with_items:
+    - mariadb-server
+    - mysql-client
+
+- name: Start and Enable MariaDB/MySQL
+  service:
+    name: mysql
+    state: started
+    enabled: yes
+
+- name: Create Random String for root password
+  command: pwgen -c -n -1 10
+  register: mysql_root_pass
+
+- name: Update MySQL Root password
+  mysql_user:
+    name: root
+    host: "{{ ansible_hostname }}"
+    password: "{{ mysql_root_pass.stdout }}"
+
+- name: Remove default Anon user
+  mysql_user:
+    name: ""
+    host: "{{ ansible_hostname }}"
+    state: absent

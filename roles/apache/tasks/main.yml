@@ -1,0 +1,41 @@
+--- # Install Apache Packages and add configuration files
+- name: Install Apache
+  apt:
+    name: apache2
+    state: latest
+    force: yes
+    update_cache: yes
+
+- name: Enable and Start Apache
+  service:
+    name: apache2
+    state: started
+    enabled: yes
+
+- name: Copy VirtualHost conf file to remote host
+  copy:
+    src: conf/site.conf
+    dest: "/etc/apache2/sites-available/{{ item.name }}.conf"
+    owner: root
+    group: root
+    mode: '0644'
+  with_items:
+    - "{{ domains }}"
+
+- name: Enable required modules
+  apache2_module:
+    state: present
+    name: "{{ apache_mods }}"
+  vars:
+    apache_mods:
+      - proxy
+      - proxy_fcgi
+      - setenvif
+      - suexec
+      - rewrite
+      - ssl
+
+- name: Enable default site
+  command: a2ensite site
+  notify:
+    restart apache2

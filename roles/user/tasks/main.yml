@@ -1,0 +1,14 @@
+- name: Create web users and their directories
+  user:
+    name: "{{ item.user }}"
+    shell: /sbin/nologin
+    create_home: yes
+  file:
+    path: "/home/{{ item.user }}/{{ item.name }}/www"
+    state: directory
+    recurse: yes
+    owner: "{{ item.user }}"
+    group: "{{ item.user }}"
+    mode: '0755'
+  with_items:
+    - "{{ domains }}"

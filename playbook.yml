@@ -1,0 +1,18 @@
+- hosts: webservers
+  vars_files: vars.yml
+  remote_user: ansible
+  become: true
+  ignore_errors: "{{ ansible_check_mode }}"
+
+  roles:
+    - role: common
+      tags: [init]
+
+    - role: apache
+      tags: [apache, web]
+
+    - role: php
+      tags: [init]
+
+    - role: mysql
+      tags: [init]

@@ -1,0 +1,14 @@
+domains:
+  - name: domain.com
+    user: domain-user
+    group: domain-group
+    user_password: "SomeEncryptedString"
+    database_name: domain_db
+    hostmaster_email: email@domain.com
+
+  - name: otherdomain.com
+    user: otherdomain
+    group: otherdomain
+    user_password: "YetAnotherEncryptedString"
+    database_name: otherdomain_db
+    hostmaster_email: email@otherdomain.com

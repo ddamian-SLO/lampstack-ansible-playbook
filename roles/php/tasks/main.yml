@@ -1,0 +1,70 @@
+---
+- name: Set PHP 7 FPM Vars depending if old stable
+  vars:
+    php_fpm: php7.0-fpm
+    php_fpm_pool_dir: /etc/php/7.0/fpm/pool.d
+  when: ansible_facts['distribution_release'] == 'stretch'
+
+- name: Set PHP 7 FPM vars if new stable
+  vars:
+    php_fpm: php7.3-fpm
+    php_fpm_pool_dir: /etc/php/7.3/fpm/pool.d
+  when: ansible_facts['distribution_release'] == 'buster'
+
+- name: Install PHP FPM Packages
+  apt:
+    name: "{{ php_packages }}"
+    state: latest
+  vars:
+    php_packages:
+      - php-fpm
+      - php-cli
+      - php-cgi
+      - php-curl
+      - php-gd
+      - php-json
+      - php-mcrypt
+      - php-mysql
+
+- name: Enable PHP 7.0 FPM
+  service: 
+    name: "{{ php_fpm }}"
+    state: started
+    enabled: yes
+
+- name: Copy PHP FPM config
+  copy:
+    src: templates/fpm.conf
+    dest: "{{ php_fpm_pool_dir }}/{{ item.name }}.conf"
+    owner: root
+    group: root
+    mode: '0644'
+  with_items:
+    - "{{ domains }}"
+
+- name: Replace SITENAME with domain.name
+  lineinfile:
+    path: "{{ php_fpm_pool_dir }}/{{ item.name }}.conf"
+    regexp: 'SITENAME'
+    line: "{{ item.name }}"
+  with_items:
+    - "{{ domains }}"
+  notify: restart php
+  
+- name: Replace USERNAME with domain.user
+  lineinfile:
+    path: "{{ php_fpm_pool_dir }}/{{ item.name }}.conf"
+    regexp: 'USERNAME'
+    line: "{{ item.user }}"
+  with_items:
+    - "{{ domains }}"
+  notify: restart php
+
+- name: Replace GROUPNAME with domain.group
+  lineinfile:
+    path: "{{ php_fpm_pool_dir }}/{{ item.name }}.conf"
+    regexp: 'GROUPNAME'
+    line: "{{ item.group }}"
+  with_items:
+    - "{{ domains }}"
+  notify: restart php    
